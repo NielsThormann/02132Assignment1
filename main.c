@@ -25,7 +25,17 @@ unsigned char original_image[BMP_WIDTH][BMP_HEIGTH][BMP_CHANNELS];
 unsigned char output_image[BMP_WIDTH][BMP_HEIGTH][BMP_CHANNELS];
 unsigned char gray_image[BMP_WIDTH][BMP_HEIGTH];
 
-void apply_binary_threshold(unsigned char pString[950][950], unsigned char pString1[950][950][3]);
+void apply_binary_threshold(unsigned char input_image[BMP_WIDTH][BMP_HEIGTH][BMP_CHANNELS]) {
+    for (int x = 0; x < BMP_WIDTH; x++) {
+        for (int y = 0; y < BMP_HEIGTH; y++) {
+            if (gray_image[x][y] < 90) {
+                gray_image[x][y] = 0;
+            } else {
+                gray_image[x][y] = 255;
+            }
+        }
+    }
+}
 
 void convert_to_grayscale(unsigned char input_image[BMP_WIDTH][BMP_HEIGTH][BMP_CHANNELS]) {
     for (int x = 0; x < BMP_WIDTH; x++) {
@@ -55,6 +65,7 @@ int main(int argc, char **argv) {
 
     // Convert image to grayscale
     convert_to_grayscale(original_image);
+    apply_binary_threshold(gray_image);
 
 
     // Apply binary threshold to image
@@ -72,9 +83,5 @@ int main(int argc, char **argv) {
 
     printf("Done!\n");
     return 0;
-}
-
-void apply_binary_threshold(unsigned char pString[950][950], unsigned char pString1[950][950][3]) {
-
 }
 
