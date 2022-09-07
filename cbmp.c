@@ -128,6 +128,27 @@ void write_bitmap(unsigned char input_image_array[BMP_WIDTH][BMP_HEIGTH][BMP_CHA
   bwrite(out_bmp, output_file_path);
 }
 
+void write_bitmap_gray(unsigned char input_image_array[BMP_WIDTH][BMP_HEIGTH], char * output_file_path){
+    if (out_bmp == NULL) {
+        _throw_error("The function 'read_bitmap' must be called at least once before calling the function 'write_bitmap'.");
+    }
+    unsigned char r;
+    unsigned char g;
+    unsigned char b;
+
+    for (int x = 0; x < BMP_WIDTH; x++)
+    {
+        for (int y = 0; y < BMP_HEIGTH; y++)
+        {
+            r = input_image_array[x][BMP_HEIGTH-1-y];
+            g = input_image_array[x][BMP_HEIGTH-1-y];
+            b = input_image_array[x][BMP_HEIGTH-1-y];
+            set_pixel_rgb(out_bmp, x, y, r, g, b);
+        }
+    }
+    bwrite(out_bmp, output_file_path);
+}
+
 // Private (ex-public) function declarations
 BMP* bopen(char* file_path)
 {
@@ -338,7 +359,7 @@ unsigned int _get_depth(unsigned char* file_byte_contents)
 		//printf("%d", (_get_int_from_buffer(DEPTH_BYTES, DEPTH_OFFSET, file_byte_contents)) & 0xFF );
 		return (_get_int_from_buffer(DEPTH_BYTES, DEPTH_OFFSET, file_byte_contents)) & 0xFF;
 	}
-		
+
 }
 
 void _update_file_byte_contents(BMP* bmp, int index, int offset, int channel)
