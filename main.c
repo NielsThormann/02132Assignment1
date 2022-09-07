@@ -24,6 +24,7 @@ void invert(unsigned char input_image[BMP_WIDTH][BMP_HEIGTH][BMP_CHANNELS],
 unsigned char original_image[BMP_WIDTH][BMP_HEIGTH][BMP_CHANNELS];
 unsigned char output_image[BMP_WIDTH][BMP_HEIGTH][BMP_CHANNELS];
 unsigned char gray_image[BMP_WIDTH][BMP_HEIGTH];
+unsigned char eroded_image[BMP_WIDTH][BMP_HEIGTH];
 
 void apply_binary_threshold(unsigned char image[BMP_WIDTH][BMP_HEIGTH]) {
     for (int x = 0; x < BMP_WIDTH; x++) {
@@ -44,6 +45,17 @@ void convert_to_grayscale(unsigned char input_image[BMP_WIDTH][BMP_HEIGTH][BMP_C
         }
     }
 }
+
+void erode_image(unsigned char image[BMP_WIDTH][BMP_HEIGTH]) {
+    for (int x = 1; x < BMP_WIDTH-1; x++) {
+        for (int y = 1; y < BMP_HEIGTH-1; y++) {
+            if (!(image[x-1][y] == 0 || image[x+1][y] == 0 || image[x][y-1] == 0 || image [x][y+1] == 0)) {
+                eroded_image[x][y] = 255;
+            }
+        }
+    }
+}
+
 
 //Main function
 int main(int argc, char **argv) {
@@ -66,6 +78,7 @@ int main(int argc, char **argv) {
     // Convert image to grayscale
     convert_to_grayscale(original_image);
     apply_binary_threshold(gray_image);
+    erode_image(gray_image);
 
 
     // Apply binary threshold to image
@@ -78,7 +91,7 @@ int main(int argc, char **argv) {
 
 
     //Save image to file
-    write_bitmap_gray(gray_image, argv[2]);
+    write_bitmap_gray(eroded_image, argv[2]);
     //write_bitmap(output_image, argv[2]);
 
     printf("Done!\n");
