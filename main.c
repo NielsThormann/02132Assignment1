@@ -6,6 +6,7 @@
 
 #include <stdlib.h>
 #include <stdio.h>
+#include <dirent.h>
 #include "cbmp.h"
 
 //Function to invert pixels of an image (negative)
@@ -47,13 +48,42 @@ void convert_to_grayscale(unsigned char input_image[BMP_WIDTH][BMP_HEIGTH][BMP_C
 }
 
 void erode_image(unsigned char image[BMP_WIDTH][BMP_HEIGTH]) {
-    for (int x = 1; x < BMP_WIDTH-1; x++) {
-        for (int y = 1; y < BMP_HEIGTH-1; y++) {
-            if (!(image[x-1][y] == 0 || image[x+1][y] == 0 || image[x][y-1] == 0 || image [x][y+1] == 0)) {
+    for (int x = 1; x < BMP_WIDTH - 1; x++) {
+        for (int y = 1; y < BMP_HEIGTH - 1; y++) {
+            if (!(image[x - 1][y] == 0 || image[x + 1][y] == 0 || image[x][y - 1] == 0 || image[x][y + 1] == 0)) {
                 eroded_image[x][y] = 255;
             }
         }
     }
+}
+
+// Partly inspired by https://c-for-dummies.com/blog/?p=3246
+int list_files(char directory[]) {
+    DIR *folder;
+    struct dirent *entry;
+
+    folder = opendir(directory);
+    if (folder == NULL) {
+        return (1);
+    }
+
+    while ((entry = readdir(folder))) {
+        // Pass the current (.) and parent (..) folders
+        if (stricmp(entry->d_name, ".") != 0 && stricmp(entry->d_name, "..") != 0) {
+            printf("%s\n",
+                   entry->d_name
+            );
+            char path[100] = {0};
+            // Add the next
+            strcat(path, directory);
+            strcat(path, "/");
+            strcat(path, entry->d_name);
+            // Recursively get files
+            list_files(path);
+        }
+    }
+
+    closedir(folder);
 }
 
 
@@ -69,6 +99,12 @@ int main(int argc, char **argv) {
         fprintf(stderr, "Usage: %s <output file path> <output file path>\n", argv[0]);
         exit(1);
     }
+
+    if (1) {
+        list_files("../samples");
+        return 1;
+    }
+
 
     printf("Example program - 02132 - A1\n");
 
@@ -97,4 +133,3 @@ int main(int argc, char **argv) {
     printf("Done!\n");
     return 0;
 }
-
