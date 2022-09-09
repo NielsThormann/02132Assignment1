@@ -10,23 +10,14 @@
 #include <string.h>
 #include "cbmp.h"
 
-//Function to invert pixels of an image (negative)
-void invert(unsigned char input_image[BMP_WIDTH][BMP_HEIGTH][BMP_CHANNELS],
-            unsigned char output_image[BMP_WIDTH][BMP_HEIGTH][BMP_CHANNELS]) {
-    for (int x = 0; x < BMP_WIDTH; x++) {
-        for (int y = 0; y < BMP_HEIGTH; y++) {
-            for (int c = 0; c < BMP_CHANNELS; c++) {
-                output_image[x][y][c] = 255 - input_image[x][y][c];
-            }
-        }
-    }
-}
-
 //Declaring the array to store the image (unsigned char = unsigned 8 bit)
 unsigned char original_image[BMP_WIDTH][BMP_HEIGTH][BMP_CHANNELS];
 unsigned char output_image[BMP_WIDTH][BMP_HEIGTH][BMP_CHANNELS];
 unsigned char gray_image[BMP_WIDTH][BMP_HEIGTH];
 unsigned char eroded_image[BMP_WIDTH][BMP_HEIGTH];
+
+void count_cells(char input_file[], char output_file[]);
+
 
 void apply_binary_threshold(unsigned char image[BMP_WIDTH][BMP_HEIGTH]) {
     for (int x = 0; x < BMP_WIDTH; x++) {
@@ -56,37 +47,65 @@ void erode_image(unsigned char image[BMP_WIDTH][BMP_HEIGTH]) {
             }
         }
     }
+    // TODO : Chec if image is fully eroded
+    // is_eroded();
 }
 
 // Partly inspired by https://c-for-dummies.com/blog/?p=3246
-int list_files(char directory[]) {
+void run_test(char input_directory[]) {
     DIR *folder;
     struct dirent *entry;
 
-    folder = opendir(directory);
+    folder = opendir(input_directory);
     if (folder == NULL) {
-        return (1);
+        return;
     }
 
     while ((entry = readdir(folder))) {
-        // Pass the current (.) and parent (..) folders
+        // Skip the current (.) and parent (..) folders
         if (strcmp(entry->d_name, ".") != 0 && strcmp(entry->d_name, "..") != 0) {
-            printf("%s\n",
-                   entry->d_name
-            );
-            char path[100] = {0};
+            // https://stackoverflow.com/questions/32179494/how-to-find-the-files-with-done-extension-from-a-specific-directory-using-c-lan
+            char *dot = strrchr(entry->d_name, '.');
+            if (dot && (strcmp(dot, ".bmp") == 0))
+            {
+                printf ("%s\n", entry->d_name);
+            }
+            char input_path[100] = {0};
+
             // Add the next
-            strcat(path, directory);
-            strcat(path, "/");
-            strcat(path, entry->d_name);
+            strcat(input_path, input_directory);
+            strcat(input_path, "/");
+            strcat(input_path, entry->d_name);
             // Recursively get files
-            list_files(path);
+            run_test(input_path);
         }
     }
-
     closedir(folder);
 }
 
+// Run the count cells algorithm
+void count_cells(char input_file[], char output_file[]) {
+    //Load image from file
+    read_bitmap(input_file, original_image);
+
+    // Convert image to grayscale
+    convert_to_grayscale(original_image);
+
+    // Apply binary threshold to image
+    apply_binary_threshold(gray_image);
+
+    // Erode image (recursively)
+    erode_image(gray_image);
+
+
+    // TODO : Mark cells with a cross on the image
+    // TODO : Print result (how many cells and which coordinates)
+
+    //Save image to file
+    write_bitmap_gray(eroded_image, output_file);
+    //write_bitmap(output_image, argv[2]);
+
+}
 
 //Main function
 int main(int argc, char **argv) {
@@ -95,42 +114,22 @@ int main(int argc, char **argv) {
     //argv[1] is the first command line argument (input image)
     //argv[2] is the second command line argument (output image)
 
-    //Checking that 2 arguments are passed
-    if (argc != 3) {
-        fprintf(stderr, "Usage: %s <output file path> <output file path>\n", argv[0]);
-        exit(1);
-    }
+    printf("Beginning!\n");
 
+    // Run all or specific test
     if (1) {
-        list_files("../samples");
-        return 1;
+        run_test("../samples");
+    } else {
+        //Checking that 2 arguments are passed
+        if (argc != 3) {
+            fprintf(stderr, "Usage: %s <output file path> <output file path>\n", argv[0]);
+            exit(1);
+        }
+
+        count_cells(argv[1], argv[2]);
     }
-
-
-    printf("Example program - 02132 - A1\n");
-
-    //Load image from file
-    read_bitmap(argv[1], original_image);
-
-    // Convert image to grayscale
-    convert_to_grayscale(original_image);
-    apply_binary_threshold(gray_image);
-    erode_image(gray_image);
-
-
-    // Apply binary threshold to image
-    //apply_binary_threshold(gray_image, output_image);
-
-    // Erode image (recursively)
-    // Mark cells with a cross on the image
-    // Print result (how many cells and which coordinates)
-
-
-
-    //Save image to file
-    write_bitmap_gray(eroded_image, argv[2]);
-    //write_bitmap(output_image, argv[2]);
-
     printf("Done!\n");
+
+
     return 0;
 }
