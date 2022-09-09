@@ -7,6 +7,7 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <dirent.h>
+#include <string.h>
 #include "cbmp.h"
 
 //Function to invert pixels of an image (negative)
@@ -69,7 +70,7 @@ int list_files(char directory[]) {
 
     while ((entry = readdir(folder))) {
         // Pass the current (.) and parent (..) folders
-        if (stricmp(entry->d_name, ".") != 0 && stricmp(entry->d_name, "..") != 0) {
+        if (strcmp(entry->d_name, ".") != 0 && strcmp(entry->d_name, "..") != 0) {
             printf("%s\n",
                    entry->d_name
             );
