@@ -9,6 +9,7 @@
 #include <dirent.h>
 #include <string.h>
 #include "cbmp.h"
+#include <time.h>
 
 //Declaring the array to store the image (unsigned char = unsigned 8 bit)
 unsigned char original_image[BMP_WIDTH][BMP_HEIGTH][BMP_CHANNELS];
@@ -18,6 +19,8 @@ unsigned char eroded_image[BMP_WIDTH][BMP_HEIGTH];
 unsigned char is_black;
 unsigned int cell_count;
 int erode_iteration;
+clock_t start, end;
+double cpu_time_used;
 #define box 7
 
 void count_cells(char input_file[], char output_file[]);
@@ -186,7 +189,7 @@ int main(int argc, char **argv) {
     //argv[0] is a string with the name of the program
     //argv[1] is the first command line argument (input image)
     //argv[2] is the second command line argument (output image)
-
+    start = clock();
     printf("Beginning!\n");
 
     // Run all or specific test
@@ -205,4 +208,7 @@ int main(int argc, char **argv) {
 
 
     return 0;
+    end = clock();
+    cpu_time_used = end - start;
+    printf("Total time: %f ms\n", cpu_time_used * 1000.0 / CLOCKS_PER_SEC);
 }
