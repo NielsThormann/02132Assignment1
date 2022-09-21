@@ -18,6 +18,31 @@ unsigned char eroded_image[BMP_WIDTH][BMP_HEIGTH];
 unsigned char is_black;
 unsigned int cell_count;
 int erode_iteration;
+
+struct Node {
+    int x;
+    int y;
+    struct Node *next;
+};
+
+struct Node *head = NULL;
+
+void insert(int x, int y) {
+    struct Node *new_node = (struct Node *) malloc(sizeof(struct Node));
+    new_node->x = x;
+    new_node->y = y;
+    new_node->next = head;
+    head = new_node;
+}
+
+void print_list() {
+    struct Node *current = head;
+    while (current != NULL) {
+        printf("(%d, %d) ", current->x, current->y);
+        current = current->next;
+    }
+}
+
 #define box 7
 
 void count_cells(char input_file[], char output_file[]);
