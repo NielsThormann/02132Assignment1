@@ -70,19 +70,34 @@ void convert_to_grayscale(unsigned char input_image[BMP_WIDTH][BMP_HEIGTH][BMP_C
 
 void erode_image(unsigned char image[BMP_WIDTH][BMP_HEIGTH]) {
     unsigned char temp_image[BMP_WIDTH][BMP_HEIGTH];
-    for (int x = 1; x < BMP_WIDTH - 1; x++) {
-        for (int y = 1; y < BMP_HEIGTH - 1; y++) {
-            if (!(image[x - 1][y] == 0 || image[x + 1][y] == 0 || image[x][y - 1] == 0 || image[x][y + 1] == 0)) {
+    for (int x = 0; x < BMP_WIDTH; x++) {
+        for (int y = 0; y < BMP_HEIGTH; y++) {
+            if (!(image[x - 1][y] == 0 || image[x][y - 1] == 0
+                || image[x + 1][y] == 0 || image[x][y + 1] == 0)) {
                 temp_image[x][y] = 255;
             } else {
                 temp_image[x][y] = 0;
             }
         }
     }
-    for (int x = 0; x < BMP_WIDTH - 1; x++) {
-        for (int y = 0; y < BMP_HEIGTH - 1; y++) {
+    for (int x = 0; x < BMP_WIDTH; x++) {
+        for (int y = 0; y < BMP_HEIGTH; y++) {
             eroded_image[x][y] = temp_image[x][y];
         }
+    }
+}
+
+void draw_cross(){
+    struct Node *ptr = head;
+    while (ptr != NULL) {
+        for(int n = -5; n < 5; n++) {
+            for(int k = -5; k < 5; k++) {
+                original_image[ptr->x + n][ptr->y+k][0] = 255;
+                original_image[ptr->x + n][ptr->y+k][1] = 0;
+                original_image[ptr->x + n][ptr->y+k][2] = 0;
+            }
+        }
+        ptr = ptr->next;
     }
 }
 
@@ -106,7 +121,7 @@ void detect_cells(unsigned char image[BMP_WIDTH][BMP_HEIGTH]) {
                         }
                     }
                     cell_count++;
-
+                    insert(x,y);
                     //add position to list
                     //add  1 to count
                 }
@@ -159,10 +174,12 @@ void count_cells(char input_file[], char output_file[]) {
 
     // Erode image (recursively)
     //erode_image(gray_image);
+    //detect_cells(eroded_image);
     //printf("Cell count = %d\n", cell_count);
-    //erode_iteration = 0;
-    erode_image_recursive(gray_image);
 
+    erode_iteration = 0;
+    erode_image_recursive(gray_image);
+    draw_cross();
 
     //Detect cells
     //detect_cells(eroded_image);
@@ -171,8 +188,8 @@ void count_cells(char input_file[], char output_file[]) {
     // TODO : Print result (how many cells and which coordinates)
 
     //Save image to file
-    write_bitmap_gray(eroded_image, output_file);
-    //write_bitmap(output_image, argv[2]);
+    //write_bitmap_gray(eroded_image, output_file);
+    write_bitmap(original_image, output_file);
 
 }
 
