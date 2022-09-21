@@ -18,7 +18,7 @@ unsigned char eroded_image[BMP_WIDTH][BMP_HEIGTH];
 unsigned char is_black;
 unsigned int cell_count;
 int erode_iteration;
-
+#define box 7
 
 void count_cells(char input_file[], char output_file[]);
 
@@ -64,26 +64,26 @@ void erode_image(unsigned char image[BMP_WIDTH][BMP_HEIGTH]) {
 }
 
 void detect_cells(unsigned char image[BMP_WIDTH][BMP_HEIGTH]) {
-    for (int x = 6; x < BMP_WIDTH - 6; x++) {
-        for (int y = 6; y < BMP_HEIGTH - 6; y++) {
+    for (int x = box; x < BMP_WIDTH - box; x++) {
+        for (int y = box; y < BMP_HEIGTH - box; y++) {
             if (image[x][y] == 255) {
-                for (int n = -6; n < 6; n++) {
-                    if (image[x - 6][y + n] == 255 || image[x + 6][y + n] == 255
-                        || image[x + n][y + 6] == 255 || image[x + n][y - 6]) {
+                is_black = 1;
+                for (int n = -box; n < box; n++) {
+                    if (image[x - box][y + n] == 255 || image[x + box][y + n] == 255
+                        || image[x + n][y + box] == 255 || image[x + n][y - box]) {
                         is_black = 0;
                         break;
                     }
-                    is_black = 1;
                 }
                 if (is_black) {
                     //make everything in box black
-                    for (int n = -5; n < 5; n++) {
-                        for (int k = -5; k < 5; k++) {
+                    for (int n = -box; n < box; n++) {
+                        for (int k = -box; k < box; k++) {
                             image[x + n][y + k] = 0;
                         }
                     }
-                    printf("removed");
                     cell_count++;
+
                     //add position to list
                     //add  1 to count
                 }
@@ -135,7 +135,9 @@ void count_cells(char input_file[], char output_file[]) {
     apply_binary_threshold(gray_image);
 
     // Erode image (recursively)
-    erode_iteration = 0;
+    //erode_image(gray_image);
+    //printf("Cell count = %d\n", cell_count);
+    //erode_iteration = 0;
     erode_image_recursive(gray_image);
 
 
@@ -153,7 +155,8 @@ void count_cells(char input_file[], char output_file[]) {
 
 void erode_image_recursive(unsigned char image[BMP_WIDTH][BMP_HEIGTH]) {
     erode_image(image);
-
+    //Detect cells
+    detect_cells(eroded_image);
     // Check if image is fully eroded (black)
     int is_eroded = 1;
     for (int x = 0; x < BMP_WIDTH; x++) {
@@ -167,7 +170,8 @@ void erode_image_recursive(unsigned char image[BMP_WIDTH][BMP_HEIGTH]) {
     }
     jump:
     if (is_eroded) {
-        printf("Image is fully eroded");
+        printf("Image is fully eroded\n");
+        printf("Cell count = %d\n", cell_count);
         return;
     }
     // Erode image again
