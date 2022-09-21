@@ -15,6 +15,8 @@ unsigned char original_image[BMP_WIDTH][BMP_HEIGTH][BMP_CHANNELS];
 unsigned char output_image[BMP_WIDTH][BMP_HEIGTH][BMP_CHANNELS];
 unsigned char gray_image[BMP_WIDTH][BMP_HEIGTH];
 unsigned char eroded_image[BMP_WIDTH][BMP_HEIGTH];
+unsigned char is_black;
+unsigned int cell_count;
 
 void count_cells(char input_file[], char output_file[]);
 
@@ -40,15 +42,52 @@ void convert_to_grayscale(unsigned char input_image[BMP_WIDTH][BMP_HEIGTH][BMP_C
 }
 
 void erode_image(unsigned char image[BMP_WIDTH][BMP_HEIGTH]) {
-    for (int x = 1; x < BMP_WIDTH - 1; x++) {
-        for (int y = 1; y < BMP_HEIGTH - 1; y++) {
+    unsigned char  temp_image[BMP_WIDTH][BMP_HEIGTH];
+    for (int x = 1; x < BMP_WIDTH-1; x++) {
+        for (int y = 1; y < BMP_HEIGTH-1; y++) {
             if (!(image[x - 1][y] == 0 || image[x + 1][y] == 0 || image[x][y - 1] == 0 || image[x][y + 1] == 0)) {
-                eroded_image[x][y] = 255;
+                temp_image[x][y] = 255;
+            } else {
+                temp_image[x][y] = 0;
             }
+        }
+    }
+    for (int x = 0; x < BMP_WIDTH-1; x++) {
+        for (int y = 0; y < BMP_HEIGTH - 1; y++) {
+            eroded_image[x][y] = temp_image[x][y];
         }
     }
     // TODO : Chec if image is fully eroded
     // is_eroded();
+}
+
+void detect_cells(unsigned char image[BMP_WIDTH][BMP_HEIGTH]) {
+    for (int x = 6; x < BMP_WIDTH-6; x++) {
+        for (int y = 6; y < BMP_HEIGTH-6; y++) {
+            if(image[x][y] == 255) {
+                for(int n = -6; n < 6; n++) {
+                    if(image[x-6][y+n] == 255 || image[x+6][y+n] == 255
+                    || image[x+n][y+6] == 255 || image[x+n][y-6]) {
+                        is_black = 0;
+                        break;
+                    }
+                    is_black = 1;
+                }
+                if(is_black) {
+                    //make everything in box black
+                    for(int n = -5; n < 5; n++) {
+                        for(int k = -5; k < 5; k++) {
+                            image[x + n][y+k] = 0;
+                        }
+                    }
+                    printf("removed");
+                    cell_count++;
+                    //add position to list
+                    //add  1 to count
+                }
+            }
+        }
+    }
 }
 
 // Partly inspired by https://c-for-dummies.com/blog/?p=3246
@@ -96,6 +135,15 @@ void count_cells(char input_file[], char output_file[]) {
 
     // Erode image (recursively)
     erode_image(gray_image);
+    erode_image(eroded_image);
+    erode_image(eroded_image);
+    erode_image(eroded_image);
+    erode_image(eroded_image);
+
+
+    //Detect cells
+    //detect_cells(eroded_image);
+
 
 
     // TODO : Mark cells with a cross on the image
@@ -117,7 +165,7 @@ int main(int argc, char **argv) {
     printf("Beginning!\n");
 
     // Run all or specific test
-    if (1) {
+    if (0) {
         run_test("../samples");
     } else {
         //Checking that 2 arguments are passed
