@@ -17,9 +17,13 @@ unsigned char gray_image[BMP_WIDTH][BMP_HEIGTH];
 unsigned char eroded_image[BMP_WIDTH][BMP_HEIGTH];
 unsigned char is_black;
 unsigned int cell_count;
+int erode_iteration;
+
 
 void count_cells(char input_file[], char output_file[]);
 
+
+void erode_image_recursive(unsigned char pString[950][950]);
 
 void apply_binary_threshold(unsigned char image[BMP_WIDTH][BMP_HEIGTH]) {
     for (int x = 0; x < BMP_WIDTH; x++) {
@@ -42,9 +46,9 @@ void convert_to_grayscale(unsigned char input_image[BMP_WIDTH][BMP_HEIGTH][BMP_C
 }
 
 void erode_image(unsigned char image[BMP_WIDTH][BMP_HEIGTH]) {
-    unsigned char  temp_image[BMP_WIDTH][BMP_HEIGTH];
-    for (int x = 1; x < BMP_WIDTH-1; x++) {
-        for (int y = 1; y < BMP_HEIGTH-1; y++) {
+    unsigned char temp_image[BMP_WIDTH][BMP_HEIGTH];
+    for (int x = 1; x < BMP_WIDTH - 1; x++) {
+        for (int y = 1; y < BMP_HEIGTH - 1; y++) {
             if (!(image[x - 1][y] == 0 || image[x + 1][y] == 0 || image[x][y - 1] == 0 || image[x][y + 1] == 0)) {
                 temp_image[x][y] = 255;
             } else {
@@ -52,32 +56,30 @@ void erode_image(unsigned char image[BMP_WIDTH][BMP_HEIGTH]) {
             }
         }
     }
-    for (int x = 0; x < BMP_WIDTH-1; x++) {
+    for (int x = 0; x < BMP_WIDTH - 1; x++) {
         for (int y = 0; y < BMP_HEIGTH - 1; y++) {
             eroded_image[x][y] = temp_image[x][y];
         }
     }
-    // TODO : Chec if image is fully eroded
-    // is_eroded();
 }
 
 void detect_cells(unsigned char image[BMP_WIDTH][BMP_HEIGTH]) {
-    for (int x = 6; x < BMP_WIDTH-6; x++) {
-        for (int y = 6; y < BMP_HEIGTH-6; y++) {
-            if(image[x][y] == 255) {
-                for(int n = -6; n < 6; n++) {
-                    if(image[x-6][y+n] == 255 || image[x+6][y+n] == 255
-                    || image[x+n][y+6] == 255 || image[x+n][y-6]) {
+    for (int x = 6; x < BMP_WIDTH - 6; x++) {
+        for (int y = 6; y < BMP_HEIGTH - 6; y++) {
+            if (image[x][y] == 255) {
+                for (int n = -6; n < 6; n++) {
+                    if (image[x - 6][y + n] == 255 || image[x + 6][y + n] == 255
+                        || image[x + n][y + 6] == 255 || image[x + n][y - 6]) {
                         is_black = 0;
                         break;
                     }
                     is_black = 1;
                 }
-                if(is_black) {
+                if (is_black) {
                     //make everything in box black
-                    for(int n = -5; n < 5; n++) {
-                        for(int k = -5; k < 5; k++) {
-                            image[x + n][y+k] = 0;
+                    for (int n = -5; n < 5; n++) {
+                        for (int k = -5; k < 5; k++) {
+                            image[x + n][y + k] = 0;
                         }
                     }
                     printf("removed");
@@ -105,9 +107,8 @@ void run_test(char input_directory[]) {
         if (strcmp(entry->d_name, ".") != 0 && strcmp(entry->d_name, "..") != 0) {
             // https://stackoverflow.com/questions/32179494/how-to-find-the-files-with-done-extension-from-a-specific-directory-using-c-lan
             char *dot = strrchr(entry->d_name, '.');
-            if (dot && (strcmp(dot, ".bmp") == 0))
-            {
-                printf ("%s\n", entry->d_name);
+            if (dot && (strcmp(dot, ".bmp") == 0)) {
+                printf("%s\n", entry->d_name);
             }
             char input_path[100] = {0};
 
@@ -134,17 +135,12 @@ void count_cells(char input_file[], char output_file[]) {
     apply_binary_threshold(gray_image);
 
     // Erode image (recursively)
-    erode_image(gray_image);
-    erode_image(eroded_image);
-    erode_image(eroded_image);
-    erode_image(eroded_image);
-    erode_image(eroded_image);
+    erode_iteration = 0;
+    erode_image_recursive(gray_image);
 
 
     //Detect cells
     //detect_cells(eroded_image);
-
-
 
     // TODO : Mark cells with a cross on the image
     // TODO : Print result (how many cells and which coordinates)
@@ -153,6 +149,31 @@ void count_cells(char input_file[], char output_file[]) {
     write_bitmap_gray(eroded_image, output_file);
     //write_bitmap(output_image, argv[2]);
 
+}
+
+void erode_image_recursive(unsigned char image[BMP_WIDTH][BMP_HEIGTH]) {
+    erode_image(image);
+
+    // Check if image is fully eroded (black)
+    int is_eroded = 1;
+    for (int x = 0; x < BMP_WIDTH; x++) {
+        for (int y = 0; y < BMP_HEIGTH; y++) {
+            if (eroded_image[x][y] == 255) {
+                is_eroded = 0;
+                // Using goto instead of break to break out of both loops
+                goto jump;
+            }
+        }
+    }
+    jump:
+    if (is_eroded) {
+        printf("Image is fully eroded");
+        return;
+    }
+    // Erode image again
+    printf("Erode image again, %d\n", erode_iteration);
+    erode_iteration++;
+    erode_image_recursive(eroded_image);
 }
 
 //Main function
