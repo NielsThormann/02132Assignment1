@@ -22,8 +22,31 @@ int erode_iteration;
 
 void count_cells(char input_file[], char output_file[]);
 
+struct Node {
+    int x;
+    int y;
+    struct Node *next;
+};
 
-void erode_image_recursive(unsigned char pString[950][950]);
+struct Node *head = NULL;
+
+void insert(int x, int y) {
+    struct Node *new_node = (struct Node *) malloc(sizeof(struct Node));
+    new_node->x = x;
+    new_node->y = y;
+    new_node->next = head;
+    head = new_node;
+}
+
+void print_list() {
+    struct Node *ptr = head;
+    while (ptr != NULL) {
+        printf("(%d, %d) ", ptr->x, ptr->y);
+        ptr = ptr->next;
+    }
+}
+
+void erode_image_recursive(unsigned char image[BMP_WIDTH][BMP_HEIGTH]);
 
 void apply_binary_threshold(unsigned char image[BMP_WIDTH][BMP_HEIGTH]) {
     for (int x = 0; x < BMP_WIDTH; x++) {
