@@ -72,8 +72,12 @@ void erode_image(unsigned char image[BMP_WIDTH][BMP_HEIGTH]) {
     unsigned char temp_image[BMP_WIDTH][BMP_HEIGTH];
     for (int x = 0; x < BMP_WIDTH; x++) {
         for (int y = 0; y < BMP_HEIGTH; y++) {
-            if (!(image[x - 1][y] == 0 || image[x][y - 1] == 0
-                || image[x + 1][y] == 0 || image[x][y + 1] == 0)) {
+            if (!(((image[x - 1][y] == 0 || image[x + 1][y] == 0
+                || image[x][y -1] == 0 || image[x][y + 1] == 0))
+                || ((image[x - 1][y] == 255 && image[x-2][y] == 0
+                && image[x + 1][y] == 255 && image[x+2][y] == 0
+                && image[x][y - 1] == 255 && image[x][y - 2] == 0
+                && image[x][y + 1] == 255 && image[x][y + 2] == 0)))) {
                 temp_image[x][y] = 255;
             } else {
                 temp_image[x][y] = 0;
@@ -102,11 +106,16 @@ void draw_cross(){
 }
 
 void detect_cells(unsigned char image[BMP_WIDTH][BMP_HEIGTH]) {
-    for (int x = box; x < BMP_WIDTH - box; x++) {
-        for (int y = box; y < BMP_HEIGTH - box; y++) {
+    for (int x = 0; x < BMP_WIDTH; x++) {
+        for (int y = 0; y < BMP_HEIGTH; y++) {
             if (image[x][y] == 255) {
                 is_black = 1;
-                for (int n = -box; n < box; n++) {
+                for (int n = -box; n <= box; n++) {
+                    //checking if the searching box is out of bounds
+                    if(x+n < 0 || y+n < 0 || x+n >= BMP_WIDTH || y+n >= BMP_HEIGTH) {
+                        image[x][y]=0;
+                    }
+                    //checking if the cell is isolated by a black border
                     if (image[x - box][y + n] == 255 || image[x + box][y + n] == 255
                         || image[x + n][y + box] == 255 || image[x + n][y - box]) {
                         is_black = 0;
@@ -180,9 +189,7 @@ void count_cells(char input_file[], char output_file[]) {
     erode_iteration = 0;
     erode_image_recursive(gray_image);
     draw_cross();
-
-    //Detect cells
-    //detect_cells(eroded_image);
+    //print_list();
 
     // TODO : Mark cells with a cross on the image
     // TODO : Print result (how many cells and which coordinates)
