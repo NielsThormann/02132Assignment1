@@ -29,8 +29,8 @@ struct Node {
 };
 
 struct Node *head = NULL;
-
 void insert(int x, int y) {
+
     struct Node *new_node = (struct Node *) malloc(sizeof(struct Node));
     new_node->x = x;
     new_node->y = y;
@@ -94,11 +94,13 @@ void erode_image(unsigned char image[BMP_WIDTH][BMP_HEIGTH]) {
 void draw_cross(){
     struct Node *ptr = head;
     while (ptr != NULL) {
-        for(int n = -5; n < 5; n++) {
-            for(int k = -5; k < 5; k++) {
-                original_image[ptr->x + n][ptr->y+k][0] = 255;
-                original_image[ptr->x + n][ptr->y+k][1] = 0;
-                original_image[ptr->x + n][ptr->y+k][2] = 0;
+        for(int n = -5; n <= 5; n++) {
+            for(int k = -5; k <= 5; k++) {
+                if(!(ptr->x+n < 0 || ptr->x+n >= BMP_WIDTH || ptr->y+k < 0 || ptr->y+k >= BMP_HEIGTH)) {
+                    original_image[ptr->x + n][ptr->y + k][0] = 255;
+                    original_image[ptr->x + n][ptr->y + k][1] = 0;
+                    original_image[ptr->x + n][ptr->y + k][2] = 0;
+                }
             }
         }
         ptr = ptr->next;
@@ -112,8 +114,11 @@ void detect_cells(unsigned char image[BMP_WIDTH][BMP_HEIGTH]) {
                 is_black = 1;
                 for (int n = -box; n <= box; n++) {
                     //checking if the searching box is out of bounds
-                    if(x+n < 0 || y+n < 0 || x+n >= BMP_WIDTH || y+n >= BMP_HEIGTH) {
-                        image[x][y]=0;
+                    if(x+n < 0 ||  x+n >= BMP_WIDTH) {
+                        image[x+n][y]=0;
+                    }
+                    if(y+n < 0 || y+n >= BMP_HEIGTH) {
+                        image[x][y + n] = 0;
                     }
                     //checking if the cell is isolated by a black border
                     if (image[x - box][y + n] == 255 || image[x + box][y + n] == 255
@@ -124,9 +129,11 @@ void detect_cells(unsigned char image[BMP_WIDTH][BMP_HEIGTH]) {
                 }
                 if (is_black) {
                     //make everything in box black
-                    for (int n = -box; n < box; n++) {
-                        for (int k = -box; k < box; k++) {
-                            image[x + n][y + k] = 0;
+                    for (int n = -box; n <= box; n++) {
+                        for (int k = -box; k <= box; k++) {
+                            if(!(x+n < 0 || x+n >= BMP_WIDTH || y+k < 0 || y+k >= BMP_HEIGTH)) {
+                                image[x + n][y + k] = 0;
+                            }
                         }
                     }
                     cell_count++;
@@ -170,6 +177,7 @@ void run_test(char input_directory[]) {
     closedir(folder);
 }
 
+
 // Run the count cells algorithm
 void count_cells(char input_file[], char output_file[]) {
     //Load image from file
@@ -197,7 +205,6 @@ void count_cells(char input_file[], char output_file[]) {
     //Save image to file
     //write_bitmap_gray(eroded_image, output_file);
     write_bitmap(original_image, output_file);
-
 }
 
 void erode_image_recursive(unsigned char image[BMP_WIDTH][BMP_HEIGTH]) {
