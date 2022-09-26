@@ -98,11 +98,13 @@ void erode_image(unsigned char image[BMP_WIDTH][BMP_HEIGTH]) {
             }
         }
     }
-    for (int x = 0; x < BMP_WIDTH; x++) {
-        for (int y = 0; y < BMP_HEIGTH; y++) {
-            eroded_image[x][y] = temp_image[x][y];
-        }
-    }
+    //Using memcpy to copy full bitmap instead of iterating through the whole bitmap
+    memcpy(eroded_image,temp_image,BMP_WIDTH*BMP_HEIGTH);
+    //for (int x = 0; x < BMP_WIDTH; x++) {
+    //    for (int y = 0; y < BMP_HEIGTH; y++) {
+    //        eroded_image[x][y] = temp_image[x][y];
+    //    }
+    //}
 }
 
 void draw_cross(){
