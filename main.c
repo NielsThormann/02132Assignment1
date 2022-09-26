@@ -48,6 +48,7 @@ void print_list() {
 
 void erode_image_recursive(unsigned char image[BMP_WIDTH][BMP_HEIGTH]);
 
+//Apply threshold and convert gray scale isnt in use because of the combine version
 void apply_binary_threshold(unsigned char image[BMP_WIDTH][BMP_HEIGTH]) {
     for (int x = 0; x < BMP_WIDTH; x++) {
         for (int y = 0; y < BMP_HEIGTH; y++) {
@@ -64,6 +65,19 @@ void convert_to_grayscale(unsigned char input_image[BMP_WIDTH][BMP_HEIGTH][BMP_C
     for (int x = 0; x < BMP_WIDTH; x++) {
         for (int y = 0; y < BMP_HEIGTH; y++) {
             gray_image[x][y] = (input_image[x][y][0] + input_image[x][y][1] + input_image[x][y][2]) / 3;
+        }
+    }
+}
+
+void convert_to_grayscale_and_apply_binary_threshold(unsigned char input_image[BMP_WIDTH][BMP_HEIGTH][BMP_CHANNELS]) {
+    for (int x = 0; x < BMP_WIDTH; x++) {
+        for (int y = 0; y < BMP_HEIGTH; y++) {
+            int binary_pixel = (input_image[x][y][0] + input_image[x][y][1] + input_image[x][y][2]) / 3;
+            if (binary_pixel < 90) {
+                gray_image[x][y] = 0;
+            } else {
+                gray_image[x][y] = 255;
+            }
         }
     }
 }
@@ -184,10 +198,12 @@ void count_cells(char input_file[], char output_file[]) {
     read_bitmap(input_file, original_image);
 
     // Convert image to grayscale
-    convert_to_grayscale(original_image);
-
+    //convert_to_grayscale(original_image);
     // Apply binary threshold to image
-    apply_binary_threshold(gray_image);
+    //apply_binary_threshold(gray_image);
+    //Convverting to grayscale and applying binary threshold in one function
+    //removes 2 forloops
+    convert_to_grayscale_and_apply_binary_threshold(original_image);
 
     // Erode image (recursively)
     //erode_image(gray_image);
