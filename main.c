@@ -110,12 +110,16 @@ void erode_image(unsigned char image[BMP_WIDTH][BMP_HEIGTH]) {
 void draw_cross(){
     struct Node *ptr = head;
     while (ptr != NULL) {
-        for(int n = -5; n <= 5; n++) {
-            for(int k = -5; k <= 5; k++) {
+        for(int n = -8; n <= 8; n++) {
+            for(int k = -1; k <= 1; k++) {
                 if(!(ptr->x+n < 0 || ptr->x+n >= BMP_WIDTH || ptr->y+k < 0 || ptr->y+k >= BMP_HEIGTH)) {
                     original_image[ptr->x + n][ptr->y + k][0] = 255;
                     original_image[ptr->x + n][ptr->y + k][1] = 0;
                     original_image[ptr->x + n][ptr->y + k][2] = 0;
+
+                    original_image[ptr->x + k][ptr->y + n][0] = 255;
+                    original_image[ptr->x + k][ptr->y + n][1] = 0;
+                    original_image[ptr->x + k][ptr->y + n][2] = 0;
                 }
             }
         }
