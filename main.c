@@ -18,6 +18,7 @@ unsigned char eroded_image[BMP_WIDTH][BMP_HEIGTH];
 unsigned char is_black;
 unsigned int cell_count;
 unsigned int total_cell_count;
+unsigned char THRESHOLD_VALUE = 90;
 
 #define box 7
 #define PRINT_POSITIONS 0
@@ -64,6 +65,7 @@ struct pathNode {
 
 struct pathNode *head = NULL;
 
+
 // Insert into list
 void insert_paths(char input_path[], char output_path[]) {
     // Create a link
@@ -93,7 +95,7 @@ void print_cell_positions();
 void convert_to_grayscale_and_apply_binary_threshold(unsigned char input_image[BMP_WIDTH][BMP_HEIGTH][BMP_CHANNELS]) {
     for (int x = 0; x < BMP_WIDTH; x++) {
         for (int y = 0; y < BMP_HEIGTH; y++) {
-            if (input_image[x][y][0] < 90) {
+            if (input_image[x][y][0] < THRESHOLD_VALUE) {
                 gray_image[x][y] = 0;
             } else {
                 gray_image[x][y] = 255;
