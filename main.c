@@ -26,36 +26,6 @@ unsigned char THRESHOLD_VALUE = 90;
 #define BENCHMARK 1
 
 
-// Linked list for position of cells
-struct PositionNode {
-    int x;
-    int y;
-    struct PositionNode *next;
-};
-
-struct PositionNode *headCross = NULL;
-
-void insert(int x, int y) {
-    struct PositionNode *new_node = (struct PositionNode *) malloc(sizeof(struct PositionNode));
-    new_node->x = x;
-    new_node->y = y;
-    new_node->next = headCross;
-    headCross = new_node;
-}
-
-// Reset the linked list
-void reset_position_list() {
-    struct PositionNode *ptr = headCross;
-    struct PositionNode *temp;
-    while (ptr != NULL) {
-        temp = ptr;
-        ptr = ptr->next;
-        free(temp);
-    }
-    headCross = NULL;
-}
-
-
 // Linked list for input and output paths
 struct pathNode {
     char input_path[100];
@@ -122,31 +92,22 @@ void erode_image(unsigned char image[BMP_WIDTH][BMP_HEIGTH]) {
     }
 
     //Using memcpy to copy full bitmap instead of iterating through the whole bitmap
-    // memcpy(eroded_image, temp_image, BMP_WIDTH * BMP_HEIGTH);
-    for (int x = 0; x < BMP_WIDTH; x++) {
-        for (int y = 0; y < BMP_HEIGTH; y++) {
-            eroded_image[x][y] = temp_image[x][y];
-        }
-    }
+    memcpy(eroded_image, temp_image, BMP_WIDTH * BMP_HEIGTH);
 }
 
-void draw_cross() {
-    struct PositionNode *ptr = headCross;
-    while (ptr != NULL) {
-        for (int n = -8; n <= 8; n++) {
-            for (int k = -1; k <= 1; k++) {
-                if (!(ptr->x + n < 0 || ptr->x + n >= BMP_WIDTH || ptr->y + k < 0 || ptr->y + k >= BMP_HEIGTH)) {
-                    original_image[ptr->x + n][ptr->y + k][0] = 255;
-                    original_image[ptr->x + n][ptr->y + k][1] = 0;
-                    original_image[ptr->x + n][ptr->y + k][2] = 0;
+void draw_cross(int x, int y) {
+    for (int n = -8; n <= 8; n++) {
+        for (int k = -1; k <= 1; k++) {
+            if (!(x + n < 0 || x + n >= BMP_WIDTH || y + k < 0 || y + k >= BMP_HEIGTH)) {
+                original_image[x + n][y + k][0] = 255;
+                original_image[x + n][y + k][1] = 0;
+                original_image[x + n][y + k][2] = 0;
 
-                    original_image[ptr->x + k][ptr->y + n][0] = 255;
-                    original_image[ptr->x + k][ptr->y + n][1] = 0;
-                    original_image[ptr->x + k][ptr->y + n][2] = 0;
-                }
+                original_image[x + k][y + n][0] = 255;
+                original_image[x + k][y + n][1] = 0;
+                original_image[x + k][y + n][2] = 0;
             }
         }
-        ptr = ptr->next;
     }
 }
 
@@ -180,12 +141,14 @@ void detect_cells(unsigned char image[BMP_WIDTH][BMP_HEIGTH]) {
                         }
                     }
                     cell_count++;
-                    if (BENCHMARK) {
+                    if (RUN_ALL) {
                         total_cell_count++;
                     }
-                    insert(x, y);
-                    //add position to list
-                    //add  1 to count
+                    draw_cross(x, y);
+                    if (PRINT_POSITIONS) {
+                        printf(" (%d, %d)", x, y);
+                    }
+
                 }
             }
         }
@@ -232,8 +195,6 @@ void get_all_test_cases(char input_directory[], char output_directory[]) {
 
 // Run the count cells algorithm
 void count_cells(char input_file[], char output_file[]) {
-    reset_position_list();
-
     //Load image from file
     read_bitmap(input_file, original_image);
 
@@ -247,11 +208,6 @@ void count_cells(char input_file[], char output_file[]) {
 
     cell_count = 0;
     erode_image_recursive(gray_image);
-    draw_cross();
-
-    if (PRINT_POSITIONS) {
-        print_cell_positions();
-    }
 
 
     //! Save image to file
@@ -282,17 +238,6 @@ void erode_image_recursive(unsigned char image[BMP_WIDTH][BMP_HEIGTH]) {
     }
     erode_image_recursive(eroded_image);
 }
-
-void print_cell_positions() {
-    printf("Position of cells (x, y):");
-    struct PositionNode *ptr = headCross;
-    while (ptr != NULL) {
-        printf(" (%d, %d)", ptr->x, ptr->y);
-        ptr = ptr->next;
-    }
-    printf("\n");
-}
-
 
 
 //Main function
@@ -336,7 +281,6 @@ void run_all_test_cases() {
         while (current != NULL) {
             printf("Running sample: %s\n", current->input_path);
             count_cells(current->input_path, current->output_path);
-            reset_position_list();
             current = current->next;
         }
         clock_t end = clock();
@@ -347,7 +291,6 @@ void run_all_test_cases() {
         while (current != NULL) {
             printf("Running sample: %s\n", current->input_path);
             count_cells(current->input_path, current->output_path);
-            reset_position_list();
             current = current->next;
         }
     }
