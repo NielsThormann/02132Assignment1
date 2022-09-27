@@ -9,6 +9,7 @@
 #include <dirent.h>
 #include <string.h>
 #include <time.h>
+#include <math.h>
 #include "cbmp.h"
 
 //Declaring the array to store the image (unsigned char = unsigned 8 bit)
@@ -22,8 +23,8 @@ unsigned char THRESHOLD_VALUE = 90;
 
 #define box 7
 #define PRINT_POSITIONS 0
-#define RUN_ALL 1
-#define BENCHMARK 1
+#define RUN_ALL 1   // Run all the samples in the specified folder
+#define BENCHMARK 1 // Benchmarking is only available when running all samples
 
 
 // Linked list for input and output paths
@@ -58,8 +59,6 @@ void count_cells(char input_file[], char output_file[]);
 void erode_image_recursive(unsigned char image[BMP_WIDTH][BMP_HEIGTH]);
 
 void run_all_test_cases();
-
-void print_cell_positions();
 
 
 void convert_to_grayscale_and_apply_binary_threshold(unsigned char input_image[BMP_WIDTH][BMP_HEIGTH][BMP_CHANNELS]) {
@@ -117,19 +116,25 @@ void detect_cells(unsigned char image[BMP_WIDTH][BMP_HEIGTH]) {
             if (image[x][y] == 255) {
                 is_black = 1;
                 for (int n = -box; n <= box; n++) {
-                    //checking if the searching box is out of bounds
-                    if (x + n < 0 || x + n >= BMP_WIDTH) {
-                        image[x + n][y] = 0;
+                    // Check if the bounding box is within the image
+                    for (int i = -box; i <= box; i++) {
+                        for (int j = -box; j <= box; j++) {
+                            if (x + i < 0 || x + i >= BMP_WIDTH || y + j < 0 || y + j >= BMP_HEIGTH) {
+                                continue;
+                            }
+                            //checking if the cell is isolated by a black border
+                            if (image[x - box][y + n] == 255 || image[x + box][y + n] == 255
+                                || image[x + n][y + box] == 255 || image[x + n][y - box]) {
+                                is_black = 0;
+                                break;
+                            }
+                        }
+                        if (!is_black) {
+                            break;
+                        }
                     }
-                    if (y + n < 0 || y + n >= BMP_HEIGTH) {
-                        image[x][y + n] = 0;
-                    }
-                    //checking if the cell is isolated by a black border
-                    if (image[x - box][y + n] == 255 || image[x + box][y + n] == 255
-                        || image[x + n][y + box] == 255 || image[x + n][y - box]) {
-                        is_black = 0;
-                        break;
-                    }
+
+
                 }
                 if (is_black) {
                     //make everything in box black
@@ -271,6 +276,7 @@ int main(int argc, char **argv) {
     return 0;
 }
 
+
 void run_all_test_cases() {
     // Iterate over the paths in the linked list
     printf("Running all samples\n");
@@ -298,3 +304,5 @@ void run_all_test_cases() {
     return;
 
 }
+
+
