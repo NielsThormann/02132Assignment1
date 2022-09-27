@@ -115,27 +115,22 @@ void detect_cells(unsigned char image[BMP_WIDTH][BMP_HEIGTH]) {
         for (int y = 0; y < BMP_HEIGTH; y++) {
             if (image[x][y] == 255) {
                 is_black = 1;
+
+                // Iterate over the border of the border of the box
                 for (int n = -box; n <= box; n++) {
-                    // Check if the bounding box is within the image
-                    for (int i = -box; i <= box; i++) {
-                        for (int j = -box; j <= box; j++) {
-                            if (x + i < 0 || x + i >= BMP_WIDTH || y + j < 0 || y + j >= BMP_HEIGTH) {
-                                continue;
+                    for (int k = -box; k <= box; k++) {
+                        if (!(x + n < 0 || x + n >= BMP_WIDTH || y + k < 0 || y + k >= BMP_HEIGTH)) {
+                            if (n == -box || n == box || k == -box || k == box) {
+                                if (image[x + n][y + k] == 255) {
+                                    is_black = 0;
+                                    goto next;
+                                }
                             }
-                            //checking if the cell is isolated by a black border
-                            if (image[x - box][y + n] == 255 || image[x + box][y + n] == 255
-                                || image[x + n][y + box] == 255 || image[x + n][y - box]) {
-                                is_black = 0;
-                                break;
-                            }
-                        }
-                        if (!is_black) {
-                            break;
                         }
                     }
-
-
                 }
+                next:
+
                 if (is_black) {
                     //make everything in box black
                     for (int n = -box; n <= box; n++) {
@@ -145,6 +140,8 @@ void detect_cells(unsigned char image[BMP_WIDTH][BMP_HEIGTH]) {
                             }
                         }
                     }
+
+
                     cell_count++;
                     if (RUN_ALL) {
                         total_cell_count++;
