@@ -22,10 +22,10 @@ unsigned int total_cell_count;
 unsigned char THRESHOLD_VALUE = 90;
 
 #define box 7
-#define PRINT_POSITIONS 0
+#define PRINT_POSITIONS 1
 #define RUN_ALL 1   // Run all the samples in the specified folder
 #define BENCHMARK 1 // Benchmarking is only available when running all samples
-
+#define WINDOWS 0   // Set to 1 if you are running on Windows
 
 // Linked list for input and output paths
 struct pathNode {
@@ -148,7 +148,7 @@ void detect_cells(unsigned char image[BMP_WIDTH][BMP_HEIGTH]) {
                     }
                     draw_cross(x, y);
                     if (PRINT_POSITIONS) {
-                        printf(" (%d, %d)", x, y);
+                        printf("(%d, %d) ", x, y);
                     }
 
                 }
@@ -175,12 +175,17 @@ void get_all_test_cases(char input_directory[], char output_directory[]) {
             char input_path[256] = {0};
             char output_path[256] = {0};
 
-            // Append 
+            // Create the input path
             strcat(input_path, input_directory);
-            strcat(input_path, "\\");
-            strcat(input_path, entry->d_name);
             strcat(output_path, output_directory);
-            strcat(output_path, "\\");
+            if (WINDOWS) {
+                strcat(input_path, "\\");
+                strcat(output_path, "\\");
+            } else {
+                strcat(input_path, "/");
+                strcat(output_path, "/");
+            }
+            strcat(input_path, entry->d_name);
             strcat(output_path, entry->d_name);
 
             char *dot = strrchr(input_path, '.');
@@ -235,6 +240,9 @@ void erode_image_recursive(unsigned char image[BMP_WIDTH][BMP_HEIGTH]) {
     }
     jump:
     if (is_eroded) {
+        if (PRINT_POSITIONS) {
+            printf("\n");
+        }
         printf("Cell count = %d\n", cell_count);
         return;
     }
@@ -299,7 +307,6 @@ void run_all_test_cases() {
     }
 
     return;
-
 }
 
 
