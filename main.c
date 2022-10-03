@@ -22,10 +22,10 @@ unsigned int total_cell_count;
 unsigned char THRESHOLD_VALUE = 90;
 
 #define box 7
-#define PRINT_POSITIONS 1
-#define RUN_ALL 1   // Run all the samples in the specified folder
-#define BENCHMARK 1 // Benchmarking is only available when running all samples
-#define WINDOWS 0   // Set to 1 if you are running on Windows
+#define PRINT_POSITIONS 0
+#define RUN_ALL 0   // Run all the samples in the specified folder
+#define BENCHMARK 0 // Benchmarking is only available when running all samples
+#define WINDOWS 1   // Set to 1 if you are running on Windows
 
 // Linked list for input and output paths
 struct pathNode {
@@ -205,20 +205,11 @@ void count_cells(char input_file[], char output_file[]) {
     //Load image from file
     read_bitmap(input_file, original_image);
 
-    // Convert image to grayscale
-    //convert_to_grayscale(original_image);
-    // Apply binary threshold to image
-    //apply_binary_threshold(gray_image);
-    //Convverting to grayscale and applying binary threshold in one function
-    //removes 2 forloops
     convert_to_grayscale_and_apply_binary_threshold(original_image);
 
     cell_count = 0;
     erode_image_recursive(gray_image);
 
-
-    //! Save image to file
-    //write_bitmap_gray(eroded_image, output_file);
     write_bitmap(original_image, output_file);
 }
 
