@@ -9,7 +9,6 @@
 #include <dirent.h>
 #include <string.h>
 #include <time.h>
-#include <math.h>
 #include "cbmp.h"
 
 //Declaring the array to store the image (unsigned char = unsigned 8 bit)
@@ -23,8 +22,8 @@ unsigned char THRESHOLD_VALUE = 90;
 
 #define box 7
 #define PRINT_POSITIONS 0
-#define RUN_ALL 0   // Run all the samples in the specified folder
-#define BENCHMARK 0 // Benchmarking is only available when running all samples
+#define RUN_ALL 1   // Run all the samples in the specified folder
+#define BENCHMARK 1 // Benchmarking is only available when running all samples
 #define WINDOWS 1   // Set to 1 if you are running on Windows
 
 // Linked list for input and output paths
@@ -65,9 +64,9 @@ void convert_to_grayscale_and_apply_binary_threshold(unsigned char input_image[B
     for (int x = 0; x < BMP_WIDTH; x++) {
         for (int y = 0; y < BMP_HEIGTH; y++) {
             if (input_image[x][y][0] < THRESHOLD_VALUE) {
-                gray_image[x][y] = 0;
+                gray_image[x][y] = 0; //Making the pixel black if under the threshold
             } else {
-                gray_image[x][y] = 255;
+                gray_image[x][y] = 255; //Making the pixel white if over the threshold
             }
         }
     }
@@ -77,19 +76,18 @@ void erode_image(unsigned char image[BMP_WIDTH][BMP_HEIGTH]) {
     unsigned char temp_image[BMP_WIDTH][BMP_HEIGTH];
     for (int x = 0; x < BMP_WIDTH; x++) {
         for (int y = 0; y < BMP_HEIGTH; y++) {
-            if (!(((image[x - 1][y] == 0 || image[x + 1][y] == 0
-                    || image[x][y - 1] == 0 || image[x][y + 1] == 0))
+            if (!(((image[x - 1][y] == 0 || image[x + 1][y] == 0 // Checks if the neighbors of the pixel
+                    || image[x][y - 1] == 0 || image[x][y + 1] == 0)) // And the neighbors of the neighbors
                   || ((image[x - 1][y] == 255 && image[x - 2][y] == 0
                        && image[x + 1][y] == 255 && image[x + 2][y] == 0
                        && image[x][y - 1] == 255 && image[x][y - 2] == 0
                        && image[x][y + 1] == 255 && image[x][y + 2] == 0)))) {
-                temp_image[x][y] = 255;
+                temp_image[x][y] = 255; // Makes the temporary image white if the pixel is not eroded
             } else {
-                temp_image[x][y] = 0;
+                temp_image[x][y] = 0; // erodes the pixel if it has black neighbors
             }
         }
     }
-
     //Using memcpy to copy full bitmap instead of iterating through the whole bitmap
     memcpy(eroded_image, temp_image, BMP_WIDTH * BMP_HEIGTH);
 }
@@ -97,7 +95,7 @@ void erode_image(unsigned char image[BMP_WIDTH][BMP_HEIGTH]) {
 void draw_cross(int x, int y) {
     for (int n = -8; n <= 8; n++) {
         for (int k = -1; k <= 1; k++) {
-            if (!(x + n < 0 || x + n >= BMP_WIDTH || y + k < 0 || y + k >= BMP_HEIGTH)) {
+            if (!(x + n < 0 || x + n >= BMP_WIDTH || y + k < 0 || y + k >= BMP_HEIGTH)) { //Checking if we try to draw outside the image
                 original_image[x + n][y + k][0] = 255;
                 original_image[x + n][y + k][1] = 0;
                 original_image[x + n][y + k][2] = 0;
@@ -144,11 +142,11 @@ void detect_cells(unsigned char image[BMP_WIDTH][BMP_HEIGTH]) {
 
                     cell_count++;
                     if (RUN_ALL) {
-                        total_cell_count++;
+                        total_cell_count++; // counts total number of cells if all samples are run at once
                     }
                     draw_cross(x, y);
                     if (PRINT_POSITIONS) {
-                        printf("(%d, %d) ", x, y);
+                        printf("(%d, %d) ", x, y); //Printing the positions of the discovered cells
                     }
 
                 }
@@ -179,8 +177,8 @@ void get_all_test_cases(char input_directory[], char output_directory[]) {
             strcat(input_path, input_directory);
             strcat(output_path, output_directory);
             if (WINDOWS) {
-                strcat(input_path, "\\");
-                strcat(output_path, "\\");
+                strcat(input_path, "\\"); //Windows computers sometimes use other symbols in their pathfinding
+                strcat(output_path, "\\"); //If you are using a windows computer the code for finding samples is different
             } else {
                 strcat(input_path, "/");
                 strcat(output_path, "/");
@@ -204,17 +202,19 @@ void get_all_test_cases(char input_directory[], char output_directory[]) {
 void count_cells(char input_file[], char output_file[]) {
     //Load image from file
     read_bitmap(input_file, original_image);
-
+    //make the binaryy image
     convert_to_grayscale_and_apply_binary_threshold(original_image);
 
     cell_count = 0;
+    //erode and detect cells recursive
     erode_image_recursive(gray_image);
-
+    //Making the ouput images in the output_samples folder
     write_bitmap(original_image, output_file);
 }
 
 
 void erode_image_recursive(unsigned char image[BMP_WIDTH][BMP_HEIGTH]) {
+    //erode image once to make the gray image eroded
     erode_image(image);
     //Detect cells
     detect_cells(eroded_image);
@@ -237,6 +237,7 @@ void erode_image_recursive(unsigned char image[BMP_WIDTH][BMP_HEIGTH]) {
         printf("Cell count = %d\n", cell_count);
         return;
     }
+    //Eroding the eroded image if it wasnt fully eroded
     erode_image_recursive(eroded_image);
 }
 
@@ -252,7 +253,6 @@ int main(int argc, char **argv) {
     // Running specific test case requires the CLA's to be bmp files
 
     printf("Beginning!\n");
-
 
     //Checking that 2 arguments are passed
     if (argc != 3) {
