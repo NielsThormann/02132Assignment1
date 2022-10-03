@@ -1,3 +1,37 @@
+README:
+
+There are different configurations possible when running this program.
+
+Firstly, if not running the program from the terminal, make sure you have set the working directory to the root of the project.
+
+The program can be ran in the default manner, where you provide an input and output file.
+The only requirement here is that the “RUN_ALL” is set to 0.
+
+The second way is to instead of specifying the input and output as a file,
+you specify an input and output folder (You might have to create the output folder yourself but not the contents of course).
+The requirement here is that the “RUN_ALL” is set to 1.
+Running all the samples you will also have to set “WINDOWS” to either 1 or 0 depending on running on Windows or a Unix system.
+This is due to the difference in the file systems and paths.
+Optionally you will be able to set “BENCHMARK” to 1 or 0, which will include the timing of the total running time.
+This is only available when “RUN_ALL” is set enabled.
+
+For both configurations, it is possible to set “PRINT_POSITIONS” to either 1 or 0,
+which will print the coordinates of the found cells if set to 1.
+
+Note: We ran into some issues where sometimes the program will exit with “Invalid file depth” when running all samples,
+but have all been able to run it successfully if just trying continuously some number of times.
+It makes no sense why it sometimes would not work and sometimes do work.
+It also seems that some of us gets this error, while some of us have not received this error.
+
+
+
+
+
+
+
+OLD README:
+
+
 This folder contains code and material for the Assignment 1.
 
 To help you get started, we provide you with the library 'cbmp.h' + 'cbmp.c' to load and save images to bmp files. The description of the functions offered by this library is provided in the assignment document (in the Algorithm Step 1 and Step 7 descriptions).

@@ -21,9 +21,9 @@ unsigned int total_cell_count;
 unsigned char THRESHOLD_VALUE = 90;
 
 #define box 7
-#define PRINT_POSITIONS 0
-#define RUN_ALL 1   // Run all the samples in the specified folder
-#define BENCHMARK 1 // Benchmarking is only available when running all samples
+#define PRINT_POSITIONS 1
+#define RUN_ALL 0   // Run all the samples in the specified folder
+#define BENCHMARK 0 // Benchmarking is only available when running all samples
 #define WINDOWS 1   // Set to 1 if you are running on Windows
 
 // Linked list for input and output paths
@@ -177,9 +177,11 @@ void get_all_test_cases(char input_directory[], char output_directory[]) {
             strcat(input_path, input_directory);
             strcat(output_path, output_directory);
             if (WINDOWS) {
-                strcat(input_path, "\\"); //Windows computers sometimes use other symbols in their pathfinding
-                strcat(output_path, "\\"); //If you are using a windows computer the code for finding samples is different
+                // Adding a backslash if on windows
+                strcat(input_path, "\\");
+                strcat(output_path, "\\");
             } else {
+                // Adding a forward slash if on Unix (Linux/MacOS)
                 strcat(input_path, "/");
                 strcat(output_path, "/");
             }
